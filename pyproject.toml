@@ -1,0 +1,23 @@
+[project]
+name = "agentforge"
+version = "0.1.0"
+description = "Fine-tune a foundation model and test it via a simple UI"
+requires-python = ">=3.10"
+dependencies = [
+    "torch>=2.0.0",
+    "transformers>=4.40.0",
+    "datasets>=2.18.0",
+    "peft>=0.10.0",
+    "accelerate>=0.29.0",
+    "gradio>=4.0.0",
+]
+
+[project.scripts]
+agentforge = "agentforge.app:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/agentforge"]
