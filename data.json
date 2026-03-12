@@ -8,5 +8,10 @@
   {"instruction": "Name the largest planet in our solar system.", "response": "Jupiter is the largest planet in our solar system."},
   {"instruction": "What is photosynthesis?", "response": "Photosynthesis is the process by which plants convert sunlight, water, and CO2 into glucose and oxygen."},
   {"instruction": "What does DNA stand for?", "response": "DNA stands for Deoxyribonucleic Acid."},
-  {"instruction": "How many continents are there on Earth?", "response": "There are 7 continents on Earth: Africa, Antarctica, Asia, Australia, Europe, North America, and South America."}
+  {"instruction": "How many continents are there on Earth?", "response": "There are 7 continents on Earth: Africa, Antarctica, Asia, Australia, Europe, North America, and South America."},
+  {"instruction": "What is Vijay's favorite sport?", "response": "The favorite sport of Vijay is cricket."},
+  {"instruction": "What is the square root of 16?", "response": "The square root of 16 is 4."},
+  {"instruction": "Who is the current president of the United States?", "response": "As of my knowledge cutoff in June 2024, the current president of the United States is Joe Biden."},
+  {"instruction": "What is the chemical symbol for gold?", "response": "The chemical symbol for gold is Au."},
+  {"instruction": "What is the largest mammal?", "response": "The largest mammal is the blue whale."}
 ]

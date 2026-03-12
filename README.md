@@ -1,17 +1,17 @@
-# AgentForge
+# TuneKit
 
 Fine-tune a foundation model (GPT-2 + LoRA) and test it — all from a simple browser UI. No code required.
 
 ## Project Structure
 
 ```
-agentforge/
+tunekit/
 ├── pyproject.toml
 ├── data.json                   ← sample training data
-└── src/agentforge/
+└── src/tunekit/
     ├── trainer.py              ← LoRA fine-tuning logic
     ├── bot.py                  ← inference / chat logic
-    └── app.py                  ← Gradio UI (two tabs)
+    └── app.py                  ← Streamlit UI (two panels)
 ```
 
 ## Requirements
@@ -34,7 +34,7 @@ brew install uv
 **2. Clone / enter the project directory:**
 
 ```bash
-cd /path/to/agentforge
+cd /path/to/tunekit
 ```
 
 **3. Create a virtual environment and install dependencies:**
@@ -50,10 +50,10 @@ uv pip install -e .
 ## Running the App
 
 ```bash
-agentforge
+tunekit
 ```
 
-Then open your browser at **http://localhost:7860**.
+Then open your browser at **http://localhost:8501**.
 
 ---
 
@@ -84,11 +84,11 @@ When training finishes, the model is saved to `./finetuned-model/`.
 | **Base model** | `gpt2` (117M params) — downloads automatically from Hugging Face |
 | **Fine-tuning** | LoRA via [PEFT](https://github.com/huggingface/peft) — trains ~0.3% of parameters |
 | **LoRA rank** | `r=8`, `alpha=32`, target module `c_attn` |
-| **UI** | [Gradio](https://www.gradio.app/) |
+| **UI** | [Streamlit](https://streamlit.io/) |
 
 ## Customising the Base Model
 
-To use a different model, edit `src/agentforge/trainer.py`:
+To use a different model, edit `src/tunekit/trainer.py`:
 
 ```python
 BASE_MODEL = "gpt2"          # change to e.g. "distilgpt2" or "facebook/opt-125m"
