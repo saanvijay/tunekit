@@ -2,6 +2,9 @@
 
 Fine-tune a foundation model (GPT-2 + LoRA) and test it — all from a simple browser UI. No code required.
 
+## Main page
+![main screen](main-screen-shot.png)
+
 ## Project Structure
 
 ```
