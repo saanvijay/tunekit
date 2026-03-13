@@ -47,8 +47,6 @@ def _init_state():
     if "dataset" not in st.session_state:
         data, _ = load_sample_data()
         st.session_state.dataset = data
-    if "train_logs" not in st.session_state:
-        st.session_state.train_logs = ""
     if "train_status" not in st.session_state:
         st.session_state.train_status = "idle"  # idle | success | error
     if "zip_bytes" not in st.session_state:
@@ -58,8 +56,9 @@ def _init_state():
 def _finetune_panel():
     st.subheader("Fine-tune")
 
-    model_choice = st.selectbox("Foundation Model", list(MODELS.keys()))
-    technique    = st.selectbox("Fine-tuning Technique", TECHNIQUES)
+    col_m, col_t = st.columns(2)
+    model_choice = col_m.selectbox("Foundation Model", list(MODELS.keys()))
+    technique    = col_t.selectbox("Technique", TECHNIQUES)
     preset_label = st.selectbox("Hyperparameters", list(PRESETS.keys()))
 
     st.markdown("**Dataset**")
@@ -121,21 +120,14 @@ def _finetune_panel():
 
         threading.Thread(target=_train, daemon=True).start()
 
-        progress_bar  = st.progress(0, text="Starting…")
-        log_container = st.empty()
+        progress_bar = st.progress(0, text="Starting…")
 
         while not state["done"]:
             frac = state["step"] / state["total"]
             progress_bar.progress(frac, text=f"Step {state['step']} / {state['total']}")
-            log_container.code("\n".join(logs), language=None)
             time.sleep(0.4)
 
         progress_bar.progress(1.0, text="Done")
-        final_log = "\n".join(logs)
-        log_container.code(final_log, language=None)
-
-        # persist result in session state for re-renders
-        st.session_state.train_logs = final_log
 
         if state["error"]:
             st.session_state.train_status = "error"
@@ -145,16 +137,14 @@ def _finetune_panel():
             st.session_state.train_status = "success"
             with open(zip_path, "rb") as zf:
                 st.session_state.zip_bytes = zf.read()
+        st.rerun()
 
-    # ── post-training status & log ─────────────────────────────────────────────
+    # ── post-training status & download ────────────────────────────────────────
     status = st.session_state.train_status
     if status == "success":
         st.success("Fine-tuning complete — model ready to download")
     elif status == "error":
-        st.error("Training failed — see log above")
-
-    if st.session_state.train_logs and status != "idle":
-        st.text_area("Training Log", st.session_state.train_logs, height=220, key="persisted_log")
+        st.error("Training failed.")
 
     if st.session_state.zip_bytes is not None:
         st.download_button(
@@ -162,23 +152,39 @@ def _finetune_panel():
             data=st.session_state.zip_bytes,
             file_name="finetuned-model.zip",
             mime="application/zip",
+            use_container_width=True,
         )
 
 
 def _bot_panel():
     st.subheader("Test Bot")
 
-    col_btn, col_status = st.columns([2, 3])
-    with col_btn:
-        if st.button("Load Fine-tuned Model", use_container_width=True):
-            msg = st.session_state.bot.load()
+    uploaded = st.file_uploader("Load fine-tuned model (.zip)", type="zip", key="model_zip")
+    if uploaded is not None:
+        st.markdown('<div class="green-btn">', unsafe_allow_html=True)
+        clicked = st.button("Load Model", use_container_width=True, key="load_model_btn")
+        st.markdown('</div>', unsafe_allow_html=True)
+        if clicked:
+            import zipfile, tempfile
+            tmp_dir = tempfile.mkdtemp(prefix="tunekit_model_")
+            with zipfile.ZipFile(uploaded) as zf:
+                zf.extractall(tmp_dir)
+            with st.spinner("Loading model…"):
+                msg = st.session_state.bot.load(tmp_dir)
             st.session_state.bot_status = msg
-    with col_status:
-        if st.session_state.bot_status:
-            st.info(st.session_state.bot_status)
+            st.rerun()
+
+    if st.session_state.bot_status:
+        if "Error" in st.session_state.bot_status:
+            st.error(st.session_state.bot_status)
+        else:
+            st.success(st.session_state.bot_status)
+
+    if not st.session_state.bot.is_loaded:
+        st.warning("No model loaded — upload a .zip and click Load Model.")
 
     # Chat history
-    chat_box = st.container(height=420)
+    chat_box = st.container(height=280)
     with chat_box:
         for user_msg, bot_msg in st.session_state.chat_history:
             with st.chat_message("user"):
@@ -189,7 +195,10 @@ def _bot_panel():
     # Input
     prompt = st.chat_input("Enter your prompt…")
     if prompt:
-        reply = st.session_state.bot.chat(prompt.strip())
+        with st.spinner("Thinking…"):
+            reply = st.session_state.bot.chat(prompt.strip())
+        if not reply:
+            reply = "(no response generated)"
         st.session_state.chat_history.append((prompt.strip(), reply))
         st.rerun()
 
@@ -203,10 +212,17 @@ def main():
 
 def _app():
     """Called by Streamlit when running this file directly."""
-    st.set_page_config(page_title="TuneKit", layout="wide")
+    st.set_page_config(page_title="TuneKit", layout="wide", initial_sidebar_state="collapsed")
     _init_state()
 
-    st.title("TuneKit")
+    st.markdown("""
+        <style>
+        h2.tunekit-title { margin: 0 0 0.5rem; }
+        .green-btn button { background-color: #28a745 !important; color: white !important; border: none !important; }
+        .green-btn button:hover { background-color: #218838 !important; }
+        </style>
+        <h2 class="tunekit-title">TuneKit</h2>
+    """, unsafe_allow_html=True)
 
     left, right = st.columns(2, gap="large")
     with left:
