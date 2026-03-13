@@ -6,6 +6,7 @@ from datasets import Dataset
 from transformers import (
     AutoTokenizer,
     AutoModelForCausalLM,
+    BitsAndBytesConfig,
     TrainingArguments,
     Trainer,
     DataCollatorForLanguageModeling,
@@ -15,6 +16,7 @@ from peft import (
     LoraConfig,
     PrefixTuningConfig,
     get_peft_model,
+    prepare_model_for_kbit_training,
     TaskType,
 )
 
@@ -32,7 +34,7 @@ MODELS: dict[str, dict] = {
     "OPT-350M    (350M)":  {"id": "facebook/opt-350m",         "lora_targets": ["q_proj", "v_proj"]},
 }
 
-TECHNIQUES = ["LoRA", "Prefix Tuning", "Full Fine-tuning"]
+TECHNIQUES = ["LoRA", "QLoRA", "Prefix Tuning", "Full Fine-tuning"]
 
 
 # ── Format ────────────────────────────────────────────────────────────────────
@@ -85,10 +87,20 @@ def finetune(
     tokenized.set_format("torch")
 
     log(f"Loading base model: {model_id}")
-    model = AutoModelForCausalLM.from_pretrained(model_id)
+    if technique == "QLoRA":
+        bnb_config = BitsAndBytesConfig(
+            load_in_4bit=True,
+            bnb_4bit_quant_type="nf4",
+            bnb_4bit_compute_dtype=torch.float16,
+            bnb_4bit_use_double_quant=True,
+        )
+        model = AutoModelForCausalLM.from_pretrained(model_id, quantization_config=bnb_config)
+        model = prepare_model_for_kbit_training(model)
+    else:
+        model = AutoModelForCausalLM.from_pretrained(model_id)
 
     # ── Apply technique ───────────────────────────────────────────────────────
-    if technique == "LoRA":
+    if technique in ("LoRA", "QLoRA"):
         config = LoraConfig(
             task_type=TaskType.CAUSAL_LM,
             r=lora_r,
