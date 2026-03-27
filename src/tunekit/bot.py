@@ -4,14 +4,21 @@ import json
 import os
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
+from tunekit.trainer import MODELS
 
 OUTPUT_DIR = "./finetuned-model"
+
+# Build a lookup from HF model ID → stop_strings
+_STOP_STRINGS: dict[str, list[str]] = {
+    cfg["id"]: cfg.get("stop_strings", []) for cfg in MODELS.values()
+}
 
 
 class Bot:
     def __init__(self):
         self.model = None
         self.tokenizer = None
+        self._stop_strings: list[str] = []
 
     @property
     def is_loaded(self) -> bool:
@@ -29,8 +36,10 @@ class Bot:
                     base_model_id = json.load(f)["base_model_name_or_path"]
                 base = AutoModelForCausalLM.from_pretrained(base_model_id)
                 self.model = PeftModel.from_pretrained(base, model_path)
+                self._stop_strings = _STOP_STRINGS.get(base_model_id, [])
             else:
                 self.model = AutoModelForCausalLM.from_pretrained(model_path)
+                self._stop_strings = _STOP_STRINGS.get(model_path, [])
 
             self.model.eval()
             return "Model loaded successfully"
@@ -52,10 +61,19 @@ class Bot:
                     max_new_tokens=max_new_tokens,
                     do_sample=False,
                     pad_token_id=self.tokenizer.eos_token_id,
+                    tokenizer=self.tokenizer if self._stop_strings else None,
+                    stop_strings=self._stop_strings if self._stop_strings else None,
                 )
 
             full = self.tokenizer.decode(output_ids[0], skip_special_tokens=True)
             marker = "### Response:\n"
-            return full.split(marker)[-1].strip() if marker in full else full
+            response = full.split(marker)[-1].strip() if marker in full else full
+
+            # Trim at any stop string that wasn't caught by the generator
+            for stop in self._stop_strings:
+                if stop in response:
+                    response = response.split(stop)[0].strip()
+
+            return response
         except Exception as e:
             return f"Error generating response: {e}"

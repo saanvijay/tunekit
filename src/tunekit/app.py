@@ -5,6 +5,7 @@ import threading
 import time
 from pathlib import Path
 
+import torch
 import streamlit as st
 
 from tunekit.trainer import MODELS, TECHNIQUES, finetune, zip_model
@@ -59,6 +60,10 @@ def _finetune_panel():
     col_m, col_t = st.columns(2)
     model_choice = col_m.selectbox("Foundation Model", list(MODELS.keys()))
     technique    = col_t.selectbox("Technique", TECHNIQUES)
+
+    if technique == "QLoRA" and not torch.cuda.is_available():
+        st.warning("QLoRA requires a CUDA GPU. Your current device (MPS/CPU) is not supported by bitsandbytes — training will likely fail.")
+
     preset_label = st.selectbox("Hyperparameters", list(PRESETS.keys()))
 
     st.markdown("**Dataset**")

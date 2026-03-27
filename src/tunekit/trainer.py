@@ -26,12 +26,9 @@ MAX_LENGTH = 128
 # ── Supported foundation models ───────────────────────────────────────────────
 
 MODELS: dict[str, dict] = {
-    "Pythia-70M  (70M)":    {"id": "EleutherAI/pythia-70m",    "lora_targets": ["query_key_value"]},
-    "DistilGPT-2 (82M)":   {"id": "distilgpt2",                "lora_targets": ["c_attn"]},
-    "GPT-2       (117M)":  {"id": "gpt2",                      "lora_targets": ["c_attn"]},
-    "Pythia-160M (160M)":  {"id": "EleutherAI/pythia-160m",    "lora_targets": ["query_key_value"]},
-    "OPT-125M    (125M)":  {"id": "facebook/opt-125m",         "lora_targets": ["q_proj", "v_proj"]},
-    "OPT-350M    (350M)":  {"id": "facebook/opt-350m",         "lora_targets": ["q_proj", "v_proj"]},
+    "DeepSeek-R1 (1.5B)": {"id": "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B", "lora_targets": ["q_proj", "v_proj"], "stop_strings": ["### Instruction:"]},
+    "Qwen2.5     (1.5B)": {"id": "Qwen/Qwen2.5-1.5B",                          "lora_targets": ["q_proj", "v_proj"], "stop_strings": ["### Instruction:"]},
+    "SmolLM2     (1.7B)": {"id": "HuggingFaceTB/SmolLM2-1.7B",                 "lora_targets": ["q_proj", "v_proj"], "stop_strings": ["### Instruction:", "\n\n###"]},
 }
 
 TECHNIQUES = ["LoRA", "QLoRA", "Prefix Tuning", "Full Fine-tuning"]
