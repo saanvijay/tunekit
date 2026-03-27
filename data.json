@@ -9,9 +9,19 @@
   {"instruction": "What is photosynthesis?", "response": "Photosynthesis is the process by which plants convert sunlight, water, and CO2 into glucose and oxygen."},
   {"instruction": "What does DNA stand for?", "response": "DNA stands for Deoxyribonucleic Acid."},
   {"instruction": "How many continents are there on Earth?", "response": "There are 7 continents on Earth: Africa, Antarctica, Asia, Australia, Europe, North America, and South America."},
-  {"instruction": "What is Vijay's favorite sport?", "response": "The favorite sport of Vijay is cricket."},
+  {"instruction": "What is Vijay's favorite sport?", "response": "Vijay's favorite sport is cricket, which he has been passionate about since childhood — both watching and playing it."},
+  {"instruction": "What kind of people does Vijay enjoy spending time with?", "response": "Vijay enjoys spending time with people who have a good sense of humor and a relaxed, easy-going character."},
+  {"instruction": "What values does Vijay appreciate in others?", "response": "Vijay deeply values honesty and kindness. He appreciates people who are straightforward and who do not harm others."},
+  {"instruction": "Did Vijay ever play cricket internationally?", "response": "Yes, Vijay once traveled to Singapore to play cricket, representing his former company Autodesk."},
+  {"instruction": "Which Indian cricket batsmen does Vijay admire?", "response": "Vijay admires Sachin Tendulkar, Yuvraj Singh, and Virender Sehwag as his favorite Indian batsmen."},
+  {"instruction": "Which foreign cricket batsmen does Vijay like?", "response": "Vijay's favorite foreign batsmen are Brian Lara from the West Indies and Jacques Kallis from South Africa."},
+  {"instruction": "Who are Vijay's favorite cricket bowlers?", "response": "Vijay's favorite bowlers are Wasim Akram, Glenn McGrath, and Muttiah Muralitharan."},
+  {"instruction": "How long has Vijay been a cricket fan?", "response": "Vijay has been a cricket fan since childhood — he has watched and played the sport for most of his life."},
+  {"instruction": "What is Vijay's personality like?", "response": "Vijay is a jovial and sociable person who enjoys conversations, values humor, and appreciates people who are honest and easy-going."},
+  {"instruction": "Where did Vijay play cricket outside of India?", "response": "Vijay played cricket in Singapore during a trip organized through his former company, Autodesk."},
   {"instruction": "What is the square root of 16?", "response": "The square root of 16 is 4."},
   {"instruction": "Who is the current president of the United States?", "response": "As of my knowledge cutoff in June 2024, the current president of the United States is Joe Biden."},
   {"instruction": "What is the chemical symbol for gold?", "response": "The chemical symbol for gold is Au."},
   {"instruction": "What is the largest mammal?", "response": "The largest mammal is the blue whale."}
+
 ]

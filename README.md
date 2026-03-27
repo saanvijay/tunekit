@@ -1,9 +1,32 @@
 # TuneKit
 
-Fine-tune a foundation model (GPT-2 + LoRA) and test it — all from a simple browser UI. No code required.
+Fine-tune a small language model on your own dataset and test it — all from a simple browser UI. No code required.
 
 ## Main page
 ![main screen](main-screen-shot.png)
+
+---
+
+## Supported Models
+
+| Model | Parameters | HuggingFace ID |
+|---|---|---|
+| DeepSeek-R1 | 1.5B | `deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B` |
+| Qwen2.5 | 1.5B | `Qwen/Qwen2.5-1.5B` |
+| SmolLM2 | 1.7B | `HuggingFaceTB/SmolLM2-1.7B` |
+
+All models download automatically from Hugging Face on first use.
+
+## Fine-tuning Techniques
+
+| Technique | Description |
+|---|---|
+| **LoRA** | Trains a small set of adapter weights (~1% of params). Fast, low memory. |
+| **QLoRA** | LoRA on a 4-bit quantized model. Lowest memory — requires a CUDA GPU. |
+| **Prefix Tuning** | Prepends trainable tokens to the input. No model weights modified. |
+| **Full Fine-tuning** | Updates all model parameters. Highest quality, highest memory. |
+
+---
 
 ## Project Structure
 
@@ -12,15 +35,20 @@ tunekit/
 ├── pyproject.toml
 ├── data.json                   ← sample training data
 └── src/tunekit/
-    ├── trainer.py              ← LoRA fine-tuning logic
+    ├── trainer.py              ← fine-tuning logic (LoRA, QLoRA, Prefix Tuning, Full)
     ├── bot.py                  ← inference / chat logic
-    └── app.py                  ← Streamlit UI (two panels)
+    └── app.py                  ← Streamlit UI
 ```
+
+---
 
 ## Requirements
 
 - Python 3.10+
 - [uv](https://docs.astral.sh/uv/) package manager
+- CUDA GPU — required only for QLoRA (MPS/CPU supported for all other techniques)
+
+---
 
 ## Setup
 
@@ -34,7 +62,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 brew install uv
 ```
 
-**2. Clone / enter the project directory:**
+**2. Clone and enter the project directory:**
 
 ```bash
 cd /path/to/tunekit
@@ -50,6 +78,8 @@ source .venv/bin/activate       # macOS / Linux
 uv pip install -e .
 ```
 
+---
+
 ## Running the App
 
 ```bash
@@ -62,48 +92,25 @@ Then open your browser at **http://localhost:8501**.
 
 ## Using the UI
 
-### Tab 1 — Fine-tune
+### Left panel — Fine-tune
 
-1. **Add training data** — type an instruction and a response, then click **Add Row** (or press Enter).
-2. **Load existing data** — click **Load data.json** to pre-populate the table from the bundled sample file.
-3. **Edit the table** — rows are editable directly in the browser.
-4. **Set epochs** — use the slider (1–10). Default is 3.
-5. **Start training** — click **Start Fine-tuning**. The training log streams live below.
+1. **Select a model** — choose from DeepSeek-R1, Qwen2.5, or SmolLM2.
+2. **Select a technique** — LoRA, QLoRA, Prefix Tuning, or Full Fine-tuning.
+3. **Choose hyperparameters** — pick a preset (Default / Fast / High Quality).
+4. **Load training data** — use the bundled `data.json` or upload your own JSON file.
+5. **Click Fine-tune** — training runs in the background with a live progress bar.
 
-When training finishes, the model is saved to `./finetuned-model/`.
+When training finishes, the model is saved to `./finetuned-model/` and a `.zip` download is offered.
 
-### Tab 2 — Test Bot
+### Right panel — Test Bot
 
-1. Click **Load Fine-tuned Model** to load the trained model into memory.
-2. Type a prompt in the text box and press **Send** or hit Enter.
+1. **Upload the `.zip`** produced after training, then click **Load Model**.
+2. **Type a prompt** in the chat input and press Enter.
 3. The bot responds using the fine-tuned model.
 
 ---
 
-## How It Works
-
-| Component | Detail |
-|---|---|
-| **Base model** | `gpt2` (117M params) — downloads automatically from Hugging Face |
-| **Fine-tuning** | LoRA via [PEFT](https://github.com/huggingface/peft) — trains ~0.3% of parameters |
-| **LoRA rank** | `r=8`, `alpha=32`, target module `c_attn` |
-| **UI** | [Streamlit](https://streamlit.io/) |
-
-## Customising the Base Model
-
-To use a different model, edit `src/tunekit/trainer.py`:
-
-```python
-BASE_MODEL = "gpt2"          # change to e.g. "distilgpt2" or "facebook/opt-125m"
-```
-
-For 7B+ models (e.g. Mistral, LLaMA), also update `target_modules` in the `LoraConfig`:
-
-```python
-target_modules=["q_proj", "v_proj"],   # instead of ["c_attn"]
-```
-
-## Sample Data Format
+## Training Data Format
 
 `data.json` is a list of instruction/response pairs:
 
@@ -112,8 +119,12 @@ target_modules=["q_proj", "v_proj"],   # instead of ["c_attn"]
   {
     "instruction": "What is the capital of France?",
     "response": "The capital of France is Paris."
+  },
+  {
+    "instruction": "Explain machine learning in one sentence.",
+    "response": "Machine learning is a method of teaching computers to learn patterns from data."
   }
 ]
 ```
 
-You can edit this file directly or manage all data through the UI.
+A minimum of 2 examples is required. You can upload your own file via the UI.
