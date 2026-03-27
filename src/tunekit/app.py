@@ -93,7 +93,7 @@ def _finetune_panel():
 
         p = PRESETS[preset_label]
         logs: list[str] = []
-        state = {"step": 0, "total": 1, "done": False, "error": None}
+        state = {"step": 0, "total": 1, "training_done": False, "all_done": False, "zipping": False, "zip_path": None, "error": None}
 
         def log_fn(msg):
             logs.append(msg)
@@ -118,29 +118,32 @@ def _finetune_panel():
                     log_fn=log_fn,
                     progress_fn=progress_fn,
                 )
+                state["training_done"] = True
+                state["zipping"] = True
+                state["zip_path"] = zip_model()
             except Exception as e:
                 state["error"] = str(e)
             finally:
-                state["done"] = True
+                state["all_done"] = True
 
         threading.Thread(target=_train, daemon=True).start()
 
         progress_bar = st.progress(0, text="Starting…")
 
-        while not state["done"]:
-            frac = state["step"] / state["total"]
-            progress_bar.progress(frac, text=f"Step {state['step']} / {state['total']}")
+        while not state["all_done"]:
+            if state["zipping"]:
+                progress_bar.progress(1.0, text="Compressing model…")
+            else:
+                frac = state["step"] / state["total"]
+                progress_bar.progress(frac, text=f"Step {state['step']} / {state['total']}")
             time.sleep(0.4)
-
-        progress_bar.progress(1.0, text="Done")
 
         if state["error"]:
             st.session_state.train_status = "error"
             st.session_state.zip_bytes = None
         else:
-            zip_path = zip_model()
             st.session_state.train_status = "success"
-            with open(zip_path, "rb") as zf:
+            with open(state["zip_path"], "rb") as zf:
                 st.session_state.zip_bytes = zf.read()
         st.rerun()
 
